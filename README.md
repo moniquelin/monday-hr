@@ -34,3 +34,4 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 ## 📝 Development Log
 
 - **5 Nov 2025:** Initial project setup with working health endpoint
+- **8 Nov 2025:** Prepared database connection
