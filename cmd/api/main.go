@@ -1,14 +1,14 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/moniquelin/monday-hr/internal/data"
 )
 
 // Version number
@@ -28,6 +28,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -44,7 +45,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	// Call the openDB() helper function (see below) to create the connection pool,
-	db, err := openDB(cfg.db.dsn)
+	db, err := data.OpenDB(cfg.db.dsn)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -55,11 +56,11 @@ func main() {
 
 	logger.Printf("database connection pool established")
 
-	// Declare an instance of the application struct, containing the config struct and
-	// the logger.
+	// Declare an instance of the application struct
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	// Declare a HTTP server
@@ -75,25 +76,4 @@ func main() {
 	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
 	err = srv.ListenAndServe()
 	logger.Fatal(err)
-}
-
-// The openDB() function returns a sql.DB connection pool.
-func openDB(dsn string) (*sql.DB, error) {
-	// Create empty connection pool
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create a context with a 5-second timeout deadline.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Establish a new connection to the database
-	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

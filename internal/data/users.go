@@ -8,56 +8,20 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/moniquelin/monday-hr/internal/validator"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // User struct represents an individual user
 type User struct {
-	ID        int64     `json:"id"`
-	IsAdmin   bool      `json:"is_admin"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  password  `json:"-"`
-	Salary    int64     `json:"salary"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedBy int64     `json:"created_by"`
-	UpdatedBy int64     `json:"updated_by"`
-}
-
-// password is a struct containing the plaintext and hashed
-// versions of the password for a user
-type password struct {
-	plaintext *string
-	hash      []byte
-}
-
-// The Set() method calculates the bcrypt hash of a plaintext password, and stores both
-// the hash and the plaintext versions in the struct.
-func (p *password) Set(plaintextPassword string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
-	if err != nil {
-		return err
-	}
-	p.plaintext = &plaintextPassword
-	p.hash = hash
-	return nil
-}
-
-// The Matches() method checks whether the provided plaintext password matches the
-// hashed password stored in the struct, returning true if it matches and false
-// otherwise.
-func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
-	if err != nil {
-		switch {
-		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-			return false, nil
-		default:
-			return false, err
-		}
-	}
-	return true, nil
+	ID           int64     `json:"id"`
+	IsAdmin      bool      `json:"is_admin"`
+	Name         string    `json:"name"`
+	Email        string    `json:"email"`
+	PasswordHash []byte    `json:"-"`
+	Salary       int64     `json:"salary"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	CreatedBy    int64     `json:"created_by"`
+	UpdatedBy    int64     `json:"updated_by"`
 }
 
 // Validates email
@@ -73,6 +37,7 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
 }
 
+/*
 // Validates user
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
@@ -89,19 +54,20 @@ func ValidateUser(v *validator.Validator, user *User) {
 		panic("missing password hash for user")
 	}
 }
+*/
 
 // Error for duplicate emails
 var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
-// UserStore struct wraps the connection pool
-type UserStore struct {
+// UserModel struct wraps the connection pool
+type UserModel struct {
 	DB *sql.DB
 }
 
 // Insert new user in the database
-func (m UserStore) Insert(user *User) error {
+func (m UserModel) Insert(user *User) error {
 	query := `
 		INSERT INTO users (is_admin, name, email, password_hash, salary, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -110,7 +76,7 @@ func (m UserStore) Insert(user *User) error {
 		user.IsAdmin,
 		user.Name,
 		user.Email,
-		user.Password.hash,
+		user.PasswordHash,
 		user.Salary,
 		user.CreatedBy,
 		user.UpdatedBy}
