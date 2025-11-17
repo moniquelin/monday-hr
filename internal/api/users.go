@@ -1,14 +1,7 @@
-package main
+package api
 
-import (
-	"errors"
-	"net/http"
-
-	"github.com/moniquelin/monday-hr/internal/data"
-	"github.com/moniquelin/monday-hr/internal/validator"
-)
-
-func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+/*
+func (app *Application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		IsAdmin  bool   `json:"is_admin"`
 		Name     string `json:"name"`
@@ -45,7 +38,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Insert the user data into the database.
-	err = app.models.Users.Insert(user)
+	err = app.Models.Users.Insert(user)
 	if err != nil {
 		switch {
 		// If we get a ErrDuplicateEmail error, use the v.AddError() method to manually
@@ -66,3 +59,4 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 }
+*/

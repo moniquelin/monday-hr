@@ -1,21 +1,21 @@
-package main
+package api
 
 import (
 	"net/http"
 )
 
 // healthHandler checks the application health and reports it back
-func (app *application) healthHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) healthHandler(w http.ResponseWriter, r *http.Request) {
 	env := envelope{
 		"status": "available",
 		"system_info": map[string]string{
-			"environment": app.config.env,
-			"version":     version,
+			"environment": app.Config.Env,
+			"version":     Version,
 		},
 	}
 	err := app.writeJSON(w, http.StatusOK, env, nil)
 	if err != nil {
-		app.logger.Println(err)
+		app.Logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 	}
 }
