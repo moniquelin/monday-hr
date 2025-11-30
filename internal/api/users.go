@@ -1,5 +1,10 @@
 package api
 
+import "net/http"
+
+func (app *Application) loginUserHandler(w http.ResponseWriter, r *http.Request) {
+}
+
 /*
 func (app *Application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {

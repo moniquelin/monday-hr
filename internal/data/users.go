@@ -1,12 +1,19 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/moniquelin/monday-hr/internal/validator"
 	"golang.org/x/crypto/bcrypt"
+)
+
+// Error for duplicate emails
+var (
+	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
 // User struct represents an individual user
@@ -87,17 +94,11 @@ func ValidateUser(v *validator.Validator, user *User) {
 	}
 }
 
-// Error for duplicate emails
-var (
-	ErrDuplicateEmail = errors.New("duplicate email")
-)
-
 // UserModel struct wraps the connection pool
 type UserModel struct {
 	DB *sql.DB
 }
 
-/*
 // Insert new user in the database
 func (m UserModel) Insert(user *User) error {
 	query := `
@@ -108,20 +109,36 @@ func (m UserModel) Insert(user *User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	// Set created_by = null if the value is 0
+	var createdBy any
+	if user.CreatedBy == 0 {
+		createdBy = nil
+	} else {
+		createdBy = user.CreatedBy
+	}
+
+	// Set updated_by = null if the value is 0
+	var updatedBy any
+	if user.UpdatedBy == 0 {
+		updatedBy = nil
+	} else {
+		updatedBy = user.UpdatedBy
+	}
+
 	// If the table already contains a record with this email address, then when we try
 	// to perform the insert there will be a violation of the UNIQUE users email constraint
 	err := m.DB.QueryRowContext(ctx, query,
 		user.IsAdmin,
 		user.Name,
 		user.Email,
-		user.Password,
+		user.Password.hash,
 		user.Salary,
-		user.CreatedBy,
-		user.UpdatedBy).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+		createdBy,
+		updatedBy).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			if pqErr.Code == "23505" { // unique_violation
+			if pqErr.Code == `pq: duplicate key value violates unique constraint "users_email_key"` { // unique_violation
 				return ErrDuplicateEmail
 			}
 		}
@@ -130,4 +147,36 @@ func (m UserModel) Insert(user *User) error {
 
 	return nil
 }
-*/
+
+func (m UserModel) GetByEmail(email string) (*User, error) {
+	query := `
+        SELECT id, is_admin, name, email, password_hash, salary, created_at, updated_at, created_by, updated_by
+        FROM users
+        WHERE email = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var user User
+
+	err := m.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.IsAdmin,
+		&user.Name,
+		&user.Email,
+		&user.Password.hash,
+		&user.Salary,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.CreatedBy,
+		&user.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}

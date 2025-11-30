@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"time"
 
 	"github.com/moniquelin/monday-hr/internal/data"
 )
@@ -15,6 +16,10 @@ type Config struct {
 	Env  string
 	Db   struct {
 		Dsn string
+	}
+	JWT struct {
+		Secret string
+		Expiry time.Duration
 	}
 }
 

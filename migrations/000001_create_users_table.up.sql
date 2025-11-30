@@ -18,3 +18,4 @@ CREATE TABLE users (
   CONSTRAINT fk_users_created_by FOREIGN KEY (created_by) REFERENCES users(id),
   CONSTRAINT fk_users_updated_by FOREIGN KEY (updated_by) REFERENCES users(id)
 );
+

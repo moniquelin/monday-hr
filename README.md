@@ -7,7 +7,6 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 ## ✨ Features
 
 - Health check (GET `/v1/health`)
-- Register user (POST `/v1/users/`)
 
 ---
 
@@ -37,3 +36,4 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - **5 Nov 2025:** Initial project setup with working health endpoint
 - **8 Nov 2025:** Prepared database connection
 - **17 Nov 2025:** Improved project layout for better readability
+- **30 Nov 2025:** Added seeding function
