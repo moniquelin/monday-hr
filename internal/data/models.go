@@ -2,12 +2,6 @@ package data
 
 import (
 	"database/sql"
-	"errors"
-)
-
-// App-wide errors
-var (
-	ErrRecordNotFound = errors.New("record not found")
 )
 
 // Models contrains all data models used in the application

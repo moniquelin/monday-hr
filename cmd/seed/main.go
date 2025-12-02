@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/moniquelin/monday-hr/internal/data"
-	"github.com/moniquelin/monday-hr/internal/dbconn"
+	"github.com/moniquelin/monday-hr/internal/database"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		log.Fatal("MONDAY_HR_DB_DSN is not set")
 	}
 
-	db, err := dbconn.OpenDB(dsn)
+	db, err := database.OpenDB(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

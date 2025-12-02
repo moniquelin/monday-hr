@@ -14,6 +14,7 @@ import (
 // Error for duplicate emails
 var (
 	ErrDuplicateEmail = errors.New("duplicate email")
+	ErrRecordNotFound = errors.New("record not found")
 )
 
 // User struct represents an individual user
@@ -22,7 +23,7 @@ type User struct {
 	IsAdmin   bool      `json:"is_admin"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  password  `json:"-"`
+	Password  Password  `json:"-"`
 	Salary    int64     `json:"salary"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -30,14 +31,19 @@ type User struct {
 	UpdatedBy int64     `json:"updated_by"`
 }
 
-type password struct {
+// UserModel struct wraps the connection pool
+type UserModel struct {
+	DB *sql.DB
+}
+
+type Password struct {
 	plaintext *string
 	hash      []byte
 }
 
 // The Set() method calculates the bcrypt hash of a plaintext password, and stores both
 // the hash and the plaintext versions in the struct.
-func (p *password) Set(plaintextPassword string) error {
+func (p *Password) Set(plaintextPassword string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 	if err != nil {
 		return err
@@ -50,7 +56,7 @@ func (p *password) Set(plaintextPassword string) error {
 // The Matches() method checks whether the provided plaintext password matches the
 // hashed password stored in the struct, returning true if it matches and false
 // otherwise.
-func (p *password) Matches(plaintextPassword string) (bool, error) {
+func (p *Password) Matches(plaintextPassword string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
 	if err != nil {
 		switch {
@@ -74,29 +80,6 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(password != "", "password", "must be provided")
 	v.Check(len(password) >= 8, "password", "must be at least 8 bytes long")
 	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
-}
-
-// Validates user
-func ValidateUser(v *validator.Validator, user *User) {
-	v.Check(user.Name != "", "name", "must be provided")
-	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
-
-	ValidateEmail(v, user.Email)
-
-	if user.Password.plaintext != nil {
-		ValidatePasswordPlaintext(v, *user.Password.plaintext)
-	}
-
-	// If the password hash is ever nil, this will be due to a logic error in our
-	// codebase (probably because we forgot to set a password for the user).
-	if user.Password.hash == nil {
-		panic("missing password hash for user")
-	}
-}
-
-// UserModel struct wraps the connection pool
-type UserModel struct {
-	DB *sql.DB
 }
 
 // Insert new user in the database
@@ -148,6 +131,7 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
+// Get user by email from the database
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
         SELECT id, is_admin, name, email, password_hash, salary, created_at, updated_at, created_by, updated_by

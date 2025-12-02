@@ -10,7 +10,7 @@ import (
 
 	"github.com/moniquelin/monday-hr/internal/api"
 	"github.com/moniquelin/monday-hr/internal/data"
-	"github.com/moniquelin/monday-hr/internal/dbconn"
+	"github.com/moniquelin/monday-hr/internal/database"
 )
 
 func main() {
@@ -21,15 +21,19 @@ func main() {
 	flag.IntVar(&cfg.Port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
 	flag.StringVar(&cfg.Db.Dsn, "db-dsn", os.Getenv("MONDAY_HR_DB_DSN"), "PostgreSQL DSN")
-	flag.StringVar(&cfg.JWT.Secret, "jwt-secret", os.Getenv("MONDAY_HR_JWT_SECRET"), "JWT secret")
-	flag.DurationVar(&cfg.JWT.Expiry, "jwt-expiry", time.Hour*24, "JWT expiry")
 	flag.Parse()
+
+	// Define JWT secret key
+	cfg.Jwt.Secret = os.Getenv("MONDAY_HR_JWT_SECRET")
+	if cfg.Jwt.Secret == "" {
+		log.Fatal("missing MONDAY_HR_JWT_SECRET environment variable")
+	}
 
 	// Initialize a logger which writes messages to the standard out stream
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	// Call the openDB() helper function (see below) to create the connection pool,
-	db, err := dbconn.OpenDB(cfg.Db.Dsn)
+	db, err := database.OpenDB(cfg.Db.Dsn)
 	if err != nil {
 		logger.Fatal(err)
 	}

@@ -7,6 +7,7 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 ## ✨ Features
 
 - Health check (GET `/v1/health`)
+- User login & JWT authentication  
 
 ---
 
@@ -19,7 +20,6 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 
 ## 💡 Planned
 
-- User login & JWT authentication  
 - Role-based access (admin & employee)  
 - Attendance, overtime, and reimbursement endpoints  
 - Payroll period creation & processing  
@@ -37,3 +37,4 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - **8 Nov 2025:** Prepared database connection
 - **17 Nov 2025:** Improved project layout for better readability
 - **30 Nov 2025:** Added seeding function
+- **3 Dec 2025:** Implemented user login with JWT authentication
