@@ -6,7 +6,8 @@ import (
 
 // Models contrains all data models used in the application
 type Models struct {
-	Users UserModel
+	Users      UserModel
+	Attendance AttendanceModel
 	// To be added:
 	// Attendances AttendanceStore
 	// Overtimes   OvertimeStore
@@ -17,6 +18,7 @@ type Models struct {
 // Initialize all models with DB connection
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Users: UserModel{DB: db},
+		Users:      UserModel{DB: db},
+		Attendance: AttendanceModel{DB: db},
 	}
 }

@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/moniquelin/monday-hr/internal/data"
@@ -65,6 +64,5 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-	app.writeJSON(w, 200, envelope{"user": user}, nil)
-	fmt.Fprint(w, tokenString)
+	app.writeJSON(w, 200, envelope{"user": user, "authentication_token": tokenString}, nil)
 }

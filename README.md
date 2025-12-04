@@ -7,7 +7,7 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 ## ✨ Features
 
 - Health check (GET `/v1/health`)
-- User login & JWT authentication  
+- User login with JWT authentication (POST `/v1/auth/login`)
 
 ---
 
