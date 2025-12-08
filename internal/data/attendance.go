@@ -17,15 +17,15 @@ var (
 
 // Attendance struct represents attendance data of one date
 type Attendance struct {
-	ID         int64     `json:"id"`
-	EmployeeID int64     `json:"employee_id"`
-	AttDate    time.Time `json:"att_date"`
-	CheckInAt  time.Time `json:"checkin_at"`
-	CheckOutAt time.Time `json:"checkout_at"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	CreatedBy  int64     `json:"created_by"`
-	UpdatedBy  int64     `json:"updated_by"`
+	ID         int64      `json:"id"`
+	EmployeeID int64      `json:"employee_id"`
+	AttDate    string     `json:"att_date"`
+	CheckInAt  time.Time  `json:"checkin_at"`
+	CheckOutAt *time.Time `json:"checkout_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	CreatedBy  int64      `json:"created_by"`
+	UpdatedBy  int64      `json:"updated_by"`
 }
 
 // AttendanceModel struct wraps the connection pool
@@ -36,9 +36,9 @@ type AttendanceModel struct {
 // Record new employee check-in in the database
 func (m AttendanceModel) RecordCheckIn(attendance *Attendance) error {
 	query := `
-		INSERT INTO attendance (id, employee_id, att_date, checkin_at, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at, updated_at`
+		INSERT INTO attendance (employee_id, att_date, created_by, updated_by)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, checkin_at, created_at, updated_at`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -49,10 +49,9 @@ func (m AttendanceModel) RecordCheckIn(attendance *Attendance) error {
 	err := m.DB.QueryRowContext(ctx, query,
 		attendance.EmployeeID,
 		attendance.AttDate,
-		attendance.CheckInAt,
 		attendance.CreatedBy,
 		attendance.UpdatedBy,
-	).Scan(&attendance.ID, &attendance.CreatedAt, &attendance.UpdatedAt)
+	).Scan(&attendance.ID, &attendance.CheckInAt, &attendance.CreatedAt, &attendance.UpdatedAt)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {

@@ -23,14 +23,36 @@ func main() {
 
 	models := data.NewModels(db)
 
-	// 1. CREATE ADMIN USER
-	admin := &data.User{
-		Role:      "admin",
-		Name:      "Admin",
-		Email:     "admin@example.com",
+	// 1. CREATE SUPER ADMIN / SEED ADMIN
+	superAdmin := &data.User{
+		Role:      "super_admin",
+		Name:      "Super Admin",
+		Email:     "superadmin@example.com",
 		Salary:    0,
 		CreatedBy: 0,
 		UpdatedBy: 0,
+	}
+
+	err = superAdmin.Password.Set("Password123!")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = models.Users.Insert(superAdmin)
+	if err != nil {
+		log.Fatal("error inserting admin:", err)
+	}
+
+	fmt.Println("Created super admin user with ID:", superAdmin.ID)
+
+	// 2. CREATE ADMIN USER (ordinary admin, not super admin)
+	admin := &data.User{
+		Role:      "admin",
+		Name:      "Admin 1",
+		Email:     "admin1@example.com",
+		Salary:    0,
+		CreatedBy: superAdmin.ID,
+		UpdatedBy: superAdmin.ID,
 	}
 
 	err = admin.Password.Set("Password123!")
@@ -45,7 +67,7 @@ func main() {
 
 	fmt.Println("Created admin user with ID:", admin.ID)
 
-	// 2. CREATE 100 EMPLOYEES
+	// 3. CREATE 100 EMPLOYEES
 	for i := 1; i <= 100; i++ {
 		u := &data.User{
 			Role:      "employee",

@@ -24,8 +24,9 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 
 		// 2nd check: verify the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return app.Config.Jwt.Secret, nil
+			return []byte(app.Config.Jwt.Secret), nil
 		})
+
 		if err != nil || !token.Valid {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return
@@ -38,21 +39,22 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Println(claims)
-
 		// Get user ID from claims
-		userID, ok := claims["sub"].(int64)
+		userIDFloat, ok := claims["sub"].(float64)
 		if !ok {
 			app.invalidAuthenticationTokenResponse(w, r)
+			fmt.Print("test 3")
 			return
 		}
 
 		// Retrieve the details of the user associated with the authentication token
-		user, err := app.Models.Users.Get(userID)
+		user, err := app.Models.Users.Get(int64(userIDFloat))
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
 				app.invalidAuthenticationTokenResponse(w, r)
+				fmt.Print("test 4")
+
 			default:
 				app.serverErrorResponse(w, r, err)
 			}
@@ -70,7 +72,7 @@ func (app *Application) authenticate(next http.Handler) http.Handler {
 func (app *Application) requireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
-		if user.Role != "admin" {
+		if user.Role == "employee" {
 			app.errorResponse(w, r, http.StatusUnauthorized, "you must be an admin to access this resource")
 			return
 		}
