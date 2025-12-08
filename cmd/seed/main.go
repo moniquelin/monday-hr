@@ -25,7 +25,7 @@ func main() {
 
 	// 1. CREATE ADMIN USER
 	admin := &data.User{
-		IsAdmin:   true,
+		Role:      "admin",
 		Name:      "Admin",
 		Email:     "admin@example.com",
 		Salary:    0,
@@ -48,7 +48,7 @@ func main() {
 	// 2. CREATE 100 EMPLOYEES
 	for i := 1; i <= 100; i++ {
 		u := &data.User{
-			IsAdmin:   false,
+			Role:      "employee",
 			Name:      fmt.Sprintf("Employee %d", i),
 			Email:     fmt.Sprintf("employee%d@example.com", i),
 			Salary:    int64(5000000 + i*10000),

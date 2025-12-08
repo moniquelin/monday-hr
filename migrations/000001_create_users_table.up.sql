@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE users (
   id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  is_admin       BOOLEAN        NOT NULL DEFAULT FALSE,
+  role           TEXT           NOT NULL DEFAULT 'employee',
 
   name           VARCHAR(255)   NOT NULL,
   email          CITEXT         NOT NULL UNIQUE,

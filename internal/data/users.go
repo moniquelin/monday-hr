@@ -20,7 +20,7 @@ var (
 // User struct represents an individual user
 type User struct {
 	ID        int64     `json:"id"`
-	IsAdmin   bool      `json:"is_admin"`
+	Role      string    `json:"role"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Password  Password  `json:"-"`
@@ -85,7 +85,7 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 // Insert new user in the database
 func (m UserModel) Insert(user *User) error {
 	query := `
-		INSERT INTO users (is_admin, name, email, password_hash, salary, created_by, updated_by)
+		INSERT INTO users (role, name, email, password_hash, salary, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING id, created_at, updated_at`
 
@@ -111,7 +111,7 @@ func (m UserModel) Insert(user *User) error {
 	// If the table already contains a record with this email address, then when we try
 	// to perform the insert there will be a violation of the UNIQUE users email constraint
 	err := m.DB.QueryRowContext(ctx, query,
-		user.IsAdmin,
+		user.Role,
 		user.Name,
 		user.Email,
 		user.Password.hash,
@@ -134,7 +134,7 @@ func (m UserModel) Insert(user *User) error {
 // Get user by email from the database
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
-        SELECT id, is_admin, name, email, password_hash, salary, created_at, updated_at, created_by, updated_by
+        SELECT id, role, name, email, password_hash, salary, created_at, updated_at, created_by, updated_by
         FROM users
         WHERE email = $1`
 
@@ -145,7 +145,41 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
-		&user.IsAdmin,
+		&user.Role,
+		&user.Name,
+		&user.Email,
+		&user.Password.hash,
+		&user.Salary,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.CreatedBy,
+		&user.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// Get user by ID from the database
+func (m UserModel) Get(id int64) (*User, error) {
+	query := `
+        SELECT id, role, name, email, password_hash, salary, created_at, updated_at, created_by, updated_by
+        FROM users
+        WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var user User
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Role,
 		&user.Name,
 		&user.Email,
 		&user.Password.hash,
