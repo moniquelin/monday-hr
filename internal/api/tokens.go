@@ -1,16 +1,17 @@
 package api
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func (app *Application) createToken(username string) (string, error) {
+// createToken creates JWT tokens for user login
+func (app *Application) createToken(userId int64) (string, error) {
 	claims := jwt.MapClaims{
-		"username": username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"sub": userId,
+		"iat": time.Now().Unix(),
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		claims)
@@ -21,20 +22,4 @@ func (app *Application) createToken(username string) (string, error) {
 	}
 
 	return tokenString, nil
-}
-
-func (app *Application) verifyToken(tokenString string) error {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return app.Config.Jwt.Secret, nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
-	}
-
-	return nil
 }

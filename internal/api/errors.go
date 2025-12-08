@@ -24,14 +24,18 @@ func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, st
 	}
 }
 
-// The serverErrorResponse() method will be used when our application encounters an
-// unexpected problem at runtime. It logs the detailed error message, then uses the
-// errorResponse() helper to send a 500 Internal Server Error status code and JSON
-// response (containing a generic error message) to the client.
-func (app *Application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.logError(r, err)
-	message := "the server encountered a problem and could not process your request"
-	app.errorResponse(w, r, http.StatusInternalServerError, message)
+// The badRequestResponse() method will be used to send a 400 Bad Request
+// status code and JSON response to the client.
+func (app *Application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+// The failedValidationResponse() method will be used to send a 401 Unauthorized
+// status code and JSON response to the client.
+func (app *Application) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("WWW-Authenticate", "Bearer")
+	message := "invalid or missing authentication token"
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
 
 // The notFoundResponse() method will be used to send a 404 Not Found status code and
@@ -48,14 +52,18 @@ func (app *Application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
 }
 
-// The badRequestResponse() method will be used to send a 400 Bad Request
-// status code and JSON response to the client.
-func (app *Application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
-}
-
 // The failedValidationResponse() method will be used to send a 422 Unprocessable Entity
 // status code and JSON response to the client.
 func (app *Application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
 	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+// The serverErrorResponse() method will be used when our application encounters an
+// unexpected problem at runtime. It logs the detailed error message, then uses the
+// errorResponse() helper to send a 500 Internal Server Error status code and JSON
+// response (containing a generic error message) to the client.
+func (app *Application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logError(r, err)
+	message := "the server encountered a problem and could not process your request"
+	app.errorResponse(w, r, http.StatusInternalServerError, message)
 }
