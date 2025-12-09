@@ -16,6 +16,8 @@ func (app *Application) Routes() *httprouter.Router {
 	// Protected routes (Employee Only)
 	router.Handler(http.MethodPost, "/v1/attendance/checkin",
 		app.authenticate(app.requireEmployee(http.HandlerFunc(app.checkInHandler))))
+	router.Handler(http.MethodPost, "/v1/attendance/checkout",
+		app.authenticate(app.requireEmployee(http.HandlerFunc(app.checkOutHandler))))
 
 	return router
 }

@@ -9,6 +9,7 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - Health check (GET `/v1/health`)
 - User (admin & employees) can log in with JWT authentication (POST `/v1/auth/login`)
 - User (employees) can record attendance check in (POST `/v1/attendance/checkin`)
+- User (employees) can record attendance check out (POST `/v1/attendance/checkout`)
 
 ---
 
@@ -40,4 +41,4 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - **17 Nov 2025:** Improved project layout for better readability
 - **30 Nov 2025:** Added seeding function
 - **3 Dec 2025:** Implemented user login with JWT authentication
-- **9 Dec 2025:** Implemented attendance check in
+- **9 Dec 2025:** Implemented attendance check-in & check-out feature
