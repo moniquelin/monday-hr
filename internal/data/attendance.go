@@ -37,8 +37,7 @@ type AttendanceModel struct {
 func (m AttendanceModel) RecordCheckIn(attendance *Attendance) error {
 	query := `
 		INSERT INTO attendance (employee_id, att_date, checkin_at, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, created_at, updated_at`
+		VALUES ($1, $2, $3, $4, $5)`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -46,13 +45,12 @@ func (m AttendanceModel) RecordCheckIn(attendance *Attendance) error {
 	// If the table already contains a check in record for this employee at the check in date,
 	// there will be a violation of the UNIQUE constraint, since attendance on the same day should
 	// count as one
-	err := m.DB.QueryRowContext(ctx, query,
+	_, err := m.DB.ExecContext(ctx, query,
 		attendance.EmployeeID,
 		attendance.AttDate,
 		&attendance.CheckInAt,
 		attendance.CreatedBy,
-		attendance.UpdatedBy,
-	).Scan(&attendance.ID, &attendance.CreatedAt, &attendance.UpdatedAt)
+		attendance.UpdatedBy)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -116,6 +114,9 @@ func (m AttendanceModel) RecordCheckOut(attendance *Attendance) error {
 		attendance.EmployeeID,
 		attendance.AttDate,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Check if UPDATE applies to any row
 	rows, err := result.RowsAffected()

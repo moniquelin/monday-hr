@@ -86,8 +86,7 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 func (m UserModel) Insert(user *User) error {
 	query := `
 		INSERT INTO users (role, name, email, password_hash, salary, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, created_at, updated_at`
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -110,14 +109,14 @@ func (m UserModel) Insert(user *User) error {
 
 	// If the table already contains a record with this email address, then when we try
 	// to perform the insert there will be a violation of the UNIQUE users email constraint
-	err := m.DB.QueryRowContext(ctx, query,
+	_, err := m.DB.ExecContext(ctx, query,
 		user.Role,
 		user.Name,
 		user.Email,
 		user.Password.hash,
 		user.Salary,
 		createdBy,
-		updatedBy).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+		updatedBy)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
