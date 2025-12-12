@@ -142,6 +142,8 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 	defer cancel()
 
 	var user User
+	var createdBy *int64
+	var updatedBy *int64
 
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
@@ -152,14 +154,26 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 		&user.Salary,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-		&user.CreatedBy,
-		&user.UpdatedBy,
+		&createdBy,
+		&updatedBy,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRecordNotFound
 		}
 		return nil, err
+	}
+
+	if createdBy != nil {
+		user.CreatedBy = *createdBy
+	} else {
+		user.CreatedBy = 0
+	}
+
+	if updatedBy != nil {
+		user.UpdatedBy = *updatedBy
+	} else {
+		user.UpdatedBy = 0
 	}
 
 	return &user, nil
@@ -176,6 +190,8 @@ func (m UserModel) Get(id int64) (*User, error) {
 	defer cancel()
 
 	var user User
+	var createdBy *int64
+	var updatedBy *int64
 
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
 		&user.ID,
@@ -186,14 +202,26 @@ func (m UserModel) Get(id int64) (*User, error) {
 		&user.Salary,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-		&user.CreatedBy,
-		&user.UpdatedBy,
+		&createdBy,
+		&updatedBy,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRecordNotFound
 		}
 		return nil, err
+	}
+
+	if createdBy != nil {
+		user.CreatedBy = *createdBy
+	} else {
+		user.CreatedBy = 0
+	}
+
+	if updatedBy != nil {
+		user.UpdatedBy = *updatedBy
+	} else {
+		user.UpdatedBy = 0
 	}
 
 	return &user, nil
