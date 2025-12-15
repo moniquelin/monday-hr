@@ -36,7 +36,7 @@ func (app *Application) checkInHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		// If there is already check in for the date
 		case errors.Is(err, data.ErrDuplicateCheckIn):
-			app.errorResponse(w, r, 409, "already recorded check in today")
+			app.errorResponse(w, r, 409, err)
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
@@ -44,11 +44,12 @@ func (app *Application) checkInHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.writeJSON(w, http.StatusCreated, envelope{
+		"message":    "checked-in successfully",
 		"attendance": att,
 	}, nil)
 }
 
-// checkInHandler enables employee to record check out
+// checkOutHandler enables employee to record check out
 func (app *Application) checkOutHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.contextGetUser(r)
 
@@ -58,7 +59,7 @@ func (app *Application) checkOutHandler(w http.ResponseWriter, r *http.Request) 
 
 	// Validate if date is not weekend
 	if attDateWIB.Weekday() == time.Saturday || attDateWIB.Weekday() == time.Sunday {
-		app.errorResponse(w, r, 422, "cannot check in on the weekend")
+		app.errorResponse(w, r, 422, "cannot check out on the weekend")
 		return
 	}
 
@@ -95,11 +96,12 @@ func (app *Application) checkOutHandler(w http.ResponseWriter, r *http.Request) 
 			app.errorResponse(w, r, 404, "no check-in data for the date")
 		default:
 			app.serverErrorResponse(w, r, err)
-			return
-		}
 
-		app.writeJSON(w, http.StatusCreated, envelope{
-			"attendance": att,
-		}, nil)
+		}
+		return
 	}
+	app.writeJSON(w, http.StatusCreated, envelope{
+		"message":    "checked-out successfully",
+		"attendance": att,
+	}, nil)
 }

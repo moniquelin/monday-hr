@@ -106,9 +106,10 @@ func (m UserModel) Insert(user *User) error {
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
-			if pqErr.Code == `pq: duplicate key value violates unique constraint "users_email_key"` { // unique_violation
+			if pqErr.Code == "23505" {
 				return ErrDuplicateEmail
 			}
+
 		}
 		return err
 	}

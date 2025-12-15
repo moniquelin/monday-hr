@@ -64,5 +64,8 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-	app.writeJSON(w, 201, envelope{"user": user, "authentication_token": tokenString}, nil)
+	app.writeJSON(w, 201, envelope{
+		"message":              "logged-in successfully",
+		"user":                 user,
+		"authentication_token": tokenString}, nil)
 }
