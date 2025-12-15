@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/lib/pq"
-	"github.com/moniquelin/monday-hr/internal/validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -67,19 +66,6 @@ func (p *Password) Matches(plaintextPassword string) (bool, error) {
 		}
 	}
 	return true, nil
-}
-
-// Validates email
-func ValidateEmail(v *validator.Validator, email string) {
-	v.Check(email != "", "email", "must be provided")
-	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
-}
-
-// Validates password
-func ValidatePasswordPlaintext(v *validator.Validator, password string) {
-	v.Check(password != "", "password", "must be provided")
-	v.Check(len(password) >= 8, "password", "must be at least 8 bytes long")
-	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
 }
 
 // Insert new user in the database

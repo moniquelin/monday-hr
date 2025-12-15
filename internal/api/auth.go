@@ -24,8 +24,8 @@ func (app *Application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	v := validator.New()
 
 	// Validate Email & Password
-	data.ValidateEmail(v, input.Email)
-	data.ValidatePasswordPlaintext(v, input.PlaintextPassword)
+	validator.ValidateEmail(v, input.Email)
+	validator.ValidatePasswordPlaintext(v, input.PlaintextPassword)
 	if len(v.Errors) != 0 {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
