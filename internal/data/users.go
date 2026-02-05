@@ -212,3 +212,36 @@ func (m UserModel) Get(id int64) (*User, error) {
 
 	return &user, nil
 }
+
+// Get all users based on roles
+func (m UserModel) GetByRole(role string) ([]User, error) {
+	query := `SELECT id, role, name, email, password_hash, salary
+        FROM users
+        WHERE role = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, role)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// An employee slice to hold data from returned rows.
+	var users []User
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.ID, &user.Role, &user.Name,
+			&user.Email, &user.Password.hash, &user.Salary); err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
+	if err = rows.Err(); err != nil {
+		return users, err
+	}
+	return users, nil
+}

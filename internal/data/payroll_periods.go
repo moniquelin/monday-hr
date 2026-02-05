@@ -10,19 +10,20 @@ import (
 )
 
 var (
-	ErrPayrollPeriodOverlap   = errors.New("overlapping date with existing period")
-	ErrPayrollPeriodDateOrder = errors.New("start date is greater than end date")
+	ErrPayrollPeriodOverlap    = errors.New("overlapping date with existing period")
+	ErrPayrollPeriodDateOrder  = errors.New("start date is greater than end date")
+	ErrPayrollAlreadyProcessed = errors.New("payroll preiod has already been processed")
 )
 
-// Payroll struct represents attendance data of one date
+// PayrollPeriod struct represents a payroll period
 type PayrollPeriod struct {
 	ID        int64  `json:"id"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 	Status    string `json:"status"`
 
-	ProcessedAt time.Time `json:"processed_at"`
-	ProcessedBy time.Time `json:"processed_by"`
+	ProcessedAt *time.Time `json:"processed_at"`
+	ProcessedBy *time.Time `json:"processed_by"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -90,5 +91,76 @@ func (m PayrollPeriodModel) Insert(p PayrollPeriod) error {
 		}
 		return err
 	}
+	return nil
+}
+
+// Get user by ID from the database
+func (m PayrollPeriodModel) Get(id int64) (*PayrollPeriod, error) {
+	query := `
+		SELECT id, start_date, end_date, status,
+		       processed_at, processed_by,
+		       created_at, created_by, updated_at, updated_by
+		FROM payroll_periods
+		WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var p PayrollPeriod
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&p.ID,
+		&p.StartDate,
+		&p.EndDate,
+		&p.Status,
+		&p.ProcessedAt,
+		&p.ProcessedBy,
+		&p.CreatedAt,
+		&p.CreatedBy,
+		&p.UpdatedAt,
+		&p.UpdatedBy,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &p, nil
+}
+
+// MarkAsProcessed sets payroll period status to processed.
+// Caller must ensure the period exists and is still draft.
+func (m PayrollPeriodModel) MarkAsProcessed(id int64, processedBy int64) error {
+	query := `
+		UPDATE payroll_periods
+		SET status = 'processed',
+		    processed_at = NOW(),
+		    processed_by = $2,
+			updated_at = NOW(),
+		    updated_by = $2
+		WHERE id = $1
+			AND status = 'draft'
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, query, id, processedBy)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }

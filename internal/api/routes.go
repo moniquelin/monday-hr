@@ -22,6 +22,8 @@ func (app *Application) Routes() *httprouter.Router {
 	// Protected routes (Admin Only)
 	router.Handler(http.MethodPost, "/v1/payroll/period",
 		app.authenticate(app.requireAdmin(http.HandlerFunc(app.createPayrollPeriodHandler))))
+	router.Handler(http.MethodPost, "/v1/payroll/run-payroll",
+		app.authenticate(app.requireAdmin(http.HandlerFunc(app.runPayrollHandler))))
 
 	return router
 }
