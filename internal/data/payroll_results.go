@@ -28,7 +28,7 @@ type PayrollResultModel struct {
 func (m PayrollResultModel) InsertPayrollResult(payrollPeriodId int64, employeeId int64, baseSalary int, workingDays int, attDays int, takeHomePay int) error {
 	query := `
 		INSERT INTO payroll_results (payroll_period_id, employee_id, base_salary, working_days, attendance_days, take_home_pay)
-		VALUES ($1,	$2, $3, $4, $5)`
+		VALUES ($1,	$2, $3, $4, $5, $6)`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

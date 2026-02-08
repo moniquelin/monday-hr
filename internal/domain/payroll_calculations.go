@@ -4,24 +4,7 @@ import (
 	"time"
 )
 
-func CountWorkingDays(startDate, endDate string) (int, error) {
-	const layout = "2006-01-02"
-
-	start, err := time.Parse(layout, startDate)
-	if err != nil {
-		return 0, err
-	}
-
-	end, err := time.Parse(layout, endDate)
-	if err != nil {
-		return 0, err
-	}
-
-	// Guard: start > end
-	if start.After(end) {
-		return 0, nil
-	}
-
+func CountWorkingDays(start, end time.Time) (int, error) {
 	businessDays := 0
 
 	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
@@ -35,5 +18,6 @@ func CountWorkingDays(startDate, endDate string) (int, error) {
 }
 
 func CalculateTakeHomePay(attendanceDays, workingDays, baseSalary int) int {
-	return (attendanceDays / workingDays) * baseSalary
+	takeHomePay := float64(attendanceDays) / float64(workingDays) * float64(baseSalary)
+	return int(takeHomePay)
 }

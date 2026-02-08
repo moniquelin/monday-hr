@@ -25,7 +25,7 @@ type AttendanceSnapshotModel struct {
 
 // InsertAttendanceSnapshot gets the attendance data for a payroll period and
 // inserts them into attendance_snapshots table
-func (m AttendanceSnapshotModel) InsertAttendanceSnapshot(payrollPeriodId int64, createdBy int64, employeeId int64, periodStartDate string, periodEndDate string) error {
+func (m AttendanceSnapshotModel) InsertAttendanceSnapshot(payrollPeriodId int64, createdBy int64, employeeId int64, periodStartDate time.Time, periodEndDate time.Time) error {
 	query := `
 		INSERT INTO attendance_snapshots (payroll_period_id, employee_id, att_date, checkin_at, checkout_at, created_by)
 		SELECT
@@ -53,7 +53,7 @@ func (m AttendanceSnapshotModel) InsertAttendanceSnapshot(payrollPeriodId int64,
 // GetAttendanceCount gets the count of attendance days from a payroll period for a specific employee
 func (m AttendanceSnapshotModel) GetAttendanceDays(payrollPeriodId int64, employeeId int64) (int, error) {
 	query := `
-		SELECT COUNT(ps.checkin_at)
+		SELECT COUNT(*)
 		FROM attendance_snapshots atts
 		WHERE atts.payroll_period_id = $1
 		AND atts.employee_id = $2`

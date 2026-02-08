@@ -17,13 +17,13 @@ var (
 
 // PayrollPeriod struct represents a payroll period
 type PayrollPeriod struct {
-	ID        int64  `json:"id"`
-	StartDate string `json:"start_date"`
-	EndDate   string `json:"end_date"`
+	ID        int64 `json:"id"`
+	StartDate time.Time
+	EndDate   time.Time
 	Status    string `json:"status"`
 
 	ProcessedAt *time.Time `json:"processed_at"`
-	ProcessedBy *time.Time `json:"processed_by"`
+	ProcessedBy int64      `json:"processed_by"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -36,7 +36,7 @@ type PayrollPeriodModel struct {
 }
 
 // CheckOverlap checks whether a payroll period overlaps with any existing period.
-func (m PayrollPeriodModel) CheckOverlap(startDate, endDate string) error {
+func (m PayrollPeriodModel) CheckOverlap(startDate, endDate time.Time) error {
 	query := `
 	SELECT EXISTS (
 		SELECT 1
@@ -63,22 +63,22 @@ func (m PayrollPeriodModel) CheckOverlap(startDate, endDate string) error {
 }
 
 // Insert new payroll period in the database
-func (m PayrollPeriodModel) Insert(p PayrollPeriod) error {
-	// Check if new dates overlap with existing periods
-	if err := m.CheckOverlap(p.StartDate, p.EndDate); err != nil {
+func (m PayrollPeriodModel) Insert(startDate, endDate time.Time, userId int64) error {
+	// Check if new dates overlap with existing period
+	if err := m.CheckOverlap(startDate, endDate); err != nil {
 		return err
 	}
 
 	query := `
     INSERT INTO payroll_periods (start_date, end_date, created_by, updated_by)
-    VALUES ($1, $2, $3, $4)
+    VALUES ($1, $2, $3)
     `
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	// Insert new payroll period
-	_, err := m.DB.ExecContext(ctx, query, p.StartDate, p.EndDate, p.CreatedBy, p.UpdatedBy)
+	_, err := m.DB.ExecContext(ctx, query, startDate, endDate, userId)
 	if err != nil {
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
@@ -94,7 +94,7 @@ func (m PayrollPeriodModel) Insert(p PayrollPeriod) error {
 	return nil
 }
 
-// Get user by ID from the database
+// Get payroll period by ID from the database
 func (m PayrollPeriodModel) Get(id int64) (*PayrollPeriod, error) {
 	query := `
 		SELECT id, start_date, end_date, status,
@@ -127,7 +127,6 @@ func (m PayrollPeriodModel) Get(id int64) (*PayrollPeriod, error) {
 		}
 		return nil, err
 	}
-
 	return &p, nil
 }
 

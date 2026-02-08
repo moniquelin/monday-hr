@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -56,16 +57,8 @@ func (app *Application) createPayrollPeriodHandler(w http.ResponseWriter, r *htt
 	// Get user from context
 	user := app.contextGetUser(r)
 
-	// Initialize new payroll period
-	payrollPeriod := data.PayrollPeriod{
-		StartDate: startDate.Format("2006-01-02"),
-		EndDate:   endDate.Format("2006-01-02"),
-		CreatedBy: user.ID,
-		UpdatedBy: user.ID,
-	}
-
 	// Insert payroll period
-	err = app.Models.PayrollPeriod.Insert(payrollPeriod)
+	err = app.Models.PayrollPeriod.Insert(startDate, endDate, user.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrPayrollPeriodOverlap):
@@ -91,16 +84,30 @@ func (app *Application) runPayrollHandler(w http.ResponseWriter, r *http.Request
 		PayrollPeriodId int64 `json:"id"`
 	}
 
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
 	// Get the current payroll period information
+	log.Println("Processing payroll period with ID: ", input.PayrollPeriodId)
 	p, err := app.Models.PayrollPeriod.Get(input.PayrollPeriodId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
 	// Check the status and raise error if payroll has been processed
+	log.Println("Check if payroll period has been processed...")
 	if p.Status == "processed" {
 		app.errorResponse(w, r, 409, "payroll period has already been processed")
 		return
 	}
+	log.Printf("The type of myVariable is %T\n", p.StartDate)
 
 	// Count number of working days in the payroll period
+	log.Println("Counting the number of working days in the payroll period...")
 	workingDays, err := domain.CountWorkingDays(p.StartDate, p.EndDate)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -108,38 +115,49 @@ func (app *Application) runPayrollHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get all employees (non-admin) to process the payroll for
+	log.Println("Getting employees for the payroll...")
 	recipientList, err := app.Models.Users.GetByRole("employee")
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		log.Println("Error getting employees!")
 		return
 	}
 
 	// Generate payroll result for each employee
 	for _, recipient := range recipientList {
+		// Generate payroll result for each employee
+		log.Println("-- Processing Employee ID: ", recipient.ID)
 		// Snapshot employee attendance data into attendance_snapshots table
+		log.Println("Snapshotting employee attendance data...")
 		err = app.Models.AttendanceSnapshot.InsertAttendanceSnapshot(input.PayrollPeriodId, user.ID, recipient.ID, p.StartDate, p.EndDate)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
+			log.Println("Error Inserting Attendance Snapshot!")
 			return
 		}
-
 		// Get attendance days count
+		log.Println("Getting attendance days count...")
 		attDays, err := app.Models.AttendanceSnapshot.GetAttendanceDays(input.PayrollPeriodId, recipient.ID)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
+			log.Println("Error Getting Attendance Count!")
 			return
 		}
 
 		// Get employee salary
+		log.Println("Getting employee salary...")
 		recipientSalary := int(recipient.Salary)
 
 		// Calculate employee take home pay
+		log.Println("Calculating employee take home pay...")
 		takeHomePay := domain.CalculateTakeHomePay(attDays, workingDays, recipientSalary)
 
 		// Insert employee data and take home pay to payroll_results table
+		log.Println("Saving payroll results...")
 		err = app.Models.PayrollResult.InsertPayrollResult(p.ID, recipient.ID, recipientSalary, workingDays, attDays, takeHomePay)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
+			log.Println("Error Inserting THP!")
 			return
 		}
 	}

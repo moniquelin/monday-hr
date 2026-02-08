@@ -1,1 +1,1 @@
-DROP TYPE IF EXISTS payroll_results;
+DROP TABLE IF EXISTS payroll_results;

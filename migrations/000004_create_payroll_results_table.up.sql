@@ -10,14 +10,5 @@ CREATE TABLE payroll_results (
 
   created_at        TIMESTAMPTZ(0) NOT NULL DEFAULT NOW(),
 
-  CONSTRAINT chk_payroll_salary_positive CHECK (
-    base_salary >= 0 AND net_salary >= 0
-  ),
-  CONSTRAINT chk_payroll_days CHECK (
-    working_days > 0
-    AND attendance_days >= 0
-    AND attendance_days <= working_days
-  ),
-
   UNIQUE (payroll_period_id, employee_id)
 );

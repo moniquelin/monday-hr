@@ -1,1 +1,1 @@
-DROP TYPE IF EXISTS attendance_snapshots;
+DROP TABLE IF EXISTS attendance_snapshots;

@@ -6,7 +6,7 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 
 ## ✨ Features
 ### 🖥️ System
-- Health check (GET `/v1/health`)
+- Health check (`GET /v1/health`)
 - User can log in as admin or employee  (`POST /v1/auth/login`)
 
 ### 📅 Attendance
@@ -15,7 +15,7 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 
 ### 💸 Payroll
 - User (admin) can create payroll periods (`POST /v1/payroll/period`)
-- User (admin) can run payroll (`POST /v1/payroll/run-payroll`)
+- User (admin) can run payroll (`PUT /v1/payroll/run-payroll`)
 
 ---
 
@@ -34,5 +34,3 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - Docker setup for local development  
 - Testing  
 - Deployment setup
-- Front end (React & Vite)
-- Audit logs & request tracing  
