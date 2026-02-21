@@ -44,6 +44,9 @@ func main() {
 
 	logger.Printf("database connection pool established")
 
+	// Run migrations
+	database.RunMigrations(os.Getenv("MONDAY_HR_DB_DSN"))
+
 	// Declare an instance of the application struct
 	app := &api.Application{
 		Config: cfg,
