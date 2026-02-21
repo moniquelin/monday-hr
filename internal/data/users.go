@@ -23,7 +23,7 @@ type User struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Password  Password  `json:"-"`
-	Salary    int64     `json:"salary"`
+	Salary    int64     `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedBy int64     `json:"created_by"`

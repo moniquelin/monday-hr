@@ -104,7 +104,6 @@ func (app *Application) runPayrollHandler(w http.ResponseWriter, r *http.Request
 		app.errorResponse(w, r, 409, "payroll period has already been processed")
 		return
 	}
-	log.Printf("The type of myVariable is %T\n", p.StartDate)
 
 	// Count number of working days in the payroll period
 	log.Println("Counting the number of working days in the payroll period...")
