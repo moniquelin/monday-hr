@@ -19,7 +19,7 @@ func main() {
 
 	// Read the value of the port and env command-line flags into the config struct
 	flag.IntVar(&cfg.Port, "port", 4000, "API server port")
-	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
+	flag.StringVar(&cfg.Env, "env", os.Getenv("MONDAY_HR_ENV"), "Environment (development|staging|production)")
 	flag.StringVar(&cfg.Db.Dsn, "db-dsn", os.Getenv("MONDAY_HR_DB_DSN"), "PostgreSQL DSN")
 	flag.Parse()
 
