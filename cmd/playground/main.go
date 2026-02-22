@@ -2,26 +2,21 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/moniquelin/monday-hr/internal/domain"
+	"log"
+	"time"
 )
 
 func main() {
-	// dsn := os.Getenv("MONDAY_HR_DB_DSN")
-	// if dsn == "" {
-	// 	log.Fatal("MONDAY_HR_DB_DSN is not set")
-	// }
+	parseDates("2026-02-23")
+}
 
-	// db, err := database.OpenDB(dsn)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer db.Close()
-	// loc, err := time.LoadLocation("Asia/Jakarta")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	recipientSalary := 5010000
-	takeHomePay := domain.CalculateTakeHomePay(18, 22, recipientSalary)
-	fmt.Println(takeHomePay)
+func parseDates(date string) {
+	// Parse dates
+	t, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		log.Fatal(err)
+	}
+	year, month, day := t.Date()
+
+	fmt.Println(year, int(month), day)
 }

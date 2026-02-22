@@ -1,6 +1,6 @@
 # 💼 Monday HR
 
-HR app to track employee attendance, overtime, reimbursement, and generate payroll. Built with **Go**.
+HR app to track employee attendance and calculate payroll. Built with **Go**.
 
 ---
 
@@ -17,6 +17,18 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 - User (admin) can create payroll periods (`POST /v1/payroll/period`)
 - User (admin) can run payroll (`PUT /v1/payroll/run-payroll`)
 
+-- 
+
+## 📑 Seeding the Data
+Set the environment variable `MONDAY_DB_ALLOW_SEED = true` and hit the following endpoints
+- (`POST /v1/seed/users`) to seed 100 employee into the database 
+- (`POST /v1/seed/attendance`) to seed attendance into the database
+ - JSON input: `start_date` and `end_date` (format: "DDDD-MM-YY")
+ - Attendance result:
+  - 70% probability of employee checking in and out
+  - 20% probability of employee only checking in
+  - 10% probability of employee being absent
+
 ---
 
 ## 🏗️ Tech Stack
@@ -31,6 +43,6 @@ HR app to track employee attendance, overtime, reimbursement, and generate payro
 
 - Payslip generation  
 - Payroll summary generation for admin-side
-- Docker setup for local development  
 - Testing  
-- Deployment setup
+- Reimbursement feature
+- Overtime feature

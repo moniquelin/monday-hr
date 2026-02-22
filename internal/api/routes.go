@@ -25,5 +25,11 @@ func (app *Application) Routes() *httprouter.Router {
 	router.Handler(http.MethodPut, "/v1/payroll/run-payroll",
 		app.authenticate(app.requireAdmin(http.HandlerFunc(app.runPayrollHandler))))
 
+	// Seed routes
+	router.Handler(http.MethodPost, "/v1/seed/users",
+		app.requireAllowSeed(http.HandlerFunc(app.seedUsers)))
+	router.Handler(http.MethodPost, "/v1/seed/attendance",
+		app.requireAllowSeed(http.HandlerFunc(app.seedAttendance)))
+
 	return router
 }

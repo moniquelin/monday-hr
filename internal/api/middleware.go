@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/moniquelin/monday-hr/internal/data"
@@ -89,5 +90,21 @@ func (app *Application) requireEmployee(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
+	})
+}
+
+// requireAllowSeed checks if the MONDAY_HR_ALLOW_SEED env var is "true"
+func (app *Application) requireAllowSeed(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		allowSeed := os.Getenv("MONDAY_HR_ALLOW_SEED")
+		switch allowSeed {
+		case "":
+			app.errorResponse(w, r, http.StatusUnauthorized, "MONDAY_HR_ALLOW_SEED is not set!")
+		case "true":
+			next.ServeHTTP(w, r)
+		default:
+			app.errorResponse(w, r, 403, "You have no access to seed data!")
+			return
+		}
 	})
 }
