@@ -23,7 +23,7 @@ type PayrollPeriod struct {
 	Status    string `json:"status"`
 
 	ProcessedAt *time.Time `json:"processed_at"`
-	ProcessedBy int64      `json:"processed_by"`
+	ProcessedBy *int64     `json:"processed_by"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -71,7 +71,7 @@ func (m PayrollPeriodModel) Insert(startDate, endDate time.Time, userId int64) e
 
 	query := `
     INSERT INTO payroll_periods (start_date, end_date, created_by, updated_by)
-    VALUES ($1, $2, $3)
+    VALUES ($1, $2, $3, $3)
     `
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)

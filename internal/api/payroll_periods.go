@@ -168,6 +168,7 @@ func (app *Application) runPayrollHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	log.Println("Successfully run payroll period!")
 	app.writeJSON(w, http.StatusCreated, envelope{
 		"message": "successfully run payroll period",
 	}, nil)
